@@ -7242,7 +7242,17 @@ function encodeGardenSummary(rows){
 function decodeGardenSummary(str){
   try{
     const json = decodeURIComponent(escape(atob(decodeURIComponent(str))));
-    return JSON.parse(json).map(([label,pct])=>({label,pct}));
+    const parsed = JSON.parse(json);
+    if(!Array.isArray(parsed)) return null;
+    return parsed.slice(0,50).map(item=>{
+      if(!Array.isArray(item) || item.length<2) return null;
+      const pct = Number(item[1]);
+      if(!Number.isFinite(pct)) return null;
+      return {
+        label:String(item[0]||'').slice(0,80),
+        pct:Math.max(0,Math.min(100,Math.round(pct)))
+      };
+    }).filter(Boolean);
   }catch(e){ return null; }
 }
 function showLinkShareFallback(shareUrl){
@@ -7403,7 +7413,7 @@ function checkSharedGardenLink(){
       <div class="shared-garden-card-copy">
         <div class="shared-garden-card-name">${escapeHtml(r.label)}</div>
         <div class="shared-garden-stage">${escapeHtml(stage.label)} · ${r.pct}%</div>
-        <div class="shared-garden-progress" aria-label="정원 성장 ${r.pct}%"><i style="width:${r.pct}%;"></i></div>
+        <div class="shared-garden-progress" role="progressbar" aria-label="정원 성장" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${r.pct}"><i style="width:${r.pct}%;"></i></div>
       </div>
     </article>`;
   }).join('');
@@ -7413,11 +7423,11 @@ function checkSharedGardenLink(){
       .shared-garden-card{position:relative;aspect-ratio:3/4.15;min-height:216px;overflow:hidden;border:1px solid color-mix(in srgb,var(--sg-accent) 24%,white);border-radius:22px;padding:16px;background:linear-gradient(155deg,var(--sg-paper),var(--sg-bg));box-shadow:0 9px 24px color-mix(in srgb,var(--sg-accent) 16%,transparent);display:flex;flex-direction:column;isolation:isolate;}
       .shared-garden-card::before{content:'';position:absolute;inset:9px;border:1px solid color-mix(in srgb,var(--sg-accent) 28%,white);border-radius:15px;pointer-events:none;}
       .shared-garden-corner{position:absolute;width:92px;height:92px;border-radius:50%;right:-38px;top:-42px;background:color-mix(in srgb,var(--sg-accent) 13%,transparent);z-index:-1;}
-      .shared-garden-kicker{font-size:9px;letter-spacing:.12em;color:var(--sg-accent);font-weight:800;text-transform:uppercase;}
+      .shared-garden-kicker{font-size:9px;letter-spacing:.12em;color:#594f67;font-weight:800;text-transform:uppercase;}
       .shared-garden-sigil{flex:1;display:grid;place-items:center;font-size:52px;line-height:1;color:var(--sg-accent);text-shadow:0 2px 0 rgba(255,255,255,.8);}
       .shared-garden-card-copy{position:relative;z-index:1;}
       .shared-garden-card-name{font-size:14px;line-height:1.28;font-weight:900;color:#4a4258;word-break:keep-all;}
-      .shared-garden-stage{margin-top:5px;font-size:10.5px;font-weight:700;color:var(--sg-accent);}
+      .shared-garden-stage{margin-top:5px;font-size:10.5px;font-weight:700;color:#594f67;}
       .shared-garden-progress{height:6px;margin-top:9px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.76);}
       .shared-garden-progress i{display:block;height:100%;border-radius:inherit;background:var(--sg-accent);}
       @media(max-width:360px){.shared-garden-grid{gap:10px}.shared-garden-card{min-height:196px;padding:14px}.shared-garden-sigil{font-size:44px}}
