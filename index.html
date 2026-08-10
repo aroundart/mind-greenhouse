@@ -7245,6 +7245,34 @@ function decodeGardenSummary(str){
     return JSON.parse(json).map(([label,pct])=>({label,pct}));
   }catch(e){ return null; }
 }
+function showLinkShareFallback(shareUrl){
+  const overlay = document.createElement('div');
+  overlay.className = 'card-modal';
+  overlay.innerHTML = `
+    <div class="cm-box" style="text-align:left;">
+      <p class="cm-name" style="text-align:center;">공유창을 열지 못했어요</p>
+      <p class="mini-note">아래 정원 링크를 복사해 카카오톡 대화방에 보내주세요. 주소를 길게 눌러 직접 복사해도 돼요.</p>
+      <input id="garden-share-url" type="text" readonly value="${escapeHtml(shareUrl)}" style="width:100%;min-height:44px;padding:9px;border:1px solid #d8cbe8;border-radius:10px;font-size:14px;">
+      <button class="btn" id="garden-link-copy" style="margin-top:10px;width:100%;">🔗 정원 링크 복사하기</button>
+      <p class="mini-note" id="garden-link-status" style="margin-top:8px;min-height:18px;"></p>
+      <button class="btn ghost" id="garden-link-close" style="margin-top:6px;width:100%;">닫기</button>
+    </div>`;
+  const input = overlay.querySelector('#garden-share-url');
+  const status = overlay.querySelector('#garden-link-status');
+  overlay.querySelector('#garden-link-copy').addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(shareUrl);
+      status.textContent = '정원 링크를 복사했어요. 카카오톡 대화방 입력칸에 붙여넣어 주세요.';
+    }catch(e){
+      input.focus(); input.select();
+      status.textContent = '자동 복사가 막혔어요. 선택된 주소를 직접 복사해 주세요.';
+    }
+  });
+  const close = ()=>overlay.remove();
+  overlay.querySelector('#garden-link-close').addEventListener('click', close);
+  overlay.addEventListener('click', (e)=>{ if(e.target===overlay) close(); });
+  document.body.appendChild(overlay);
+}
 async function shareGardenDirect(){
   const rows = buildGardenSummary();
   if(rows.length===0){
@@ -7266,16 +7294,10 @@ async function shareGardenDirect(){
     try{
       await navigator.share(shareData);
       return;
-    }catch(e){
-      if(e && e.name === 'AbortError') return;
-    }
+    }catch(e){}
   }
 
-  showDownloadShareModal({
-    title:'정원 링크 보내기',
-    shareUrl,
-    shareText:shareData.text
-  });
+  showLinkShareFallback(shareUrl);
 }
 async function shareGardenAsImage(){
   const rows = buildGardenSummary();
