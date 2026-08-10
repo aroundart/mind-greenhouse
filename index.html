@@ -7245,6 +7245,38 @@ function decodeGardenSummary(str){
     return JSON.parse(json).map(([label,pct])=>({label,pct}));
   }catch(e){ return null; }
 }
+async function shareGardenDirect(){
+  const rows = buildGardenSummary();
+  if(rows.length===0){
+    alert('아직 채워진 정원이 없어요. 카드를 몇 개 뽑아본 뒤 공유해보세요.');
+    return;
+  }
+  const shareUrl = isWebHosted()
+    ? location.origin + location.pathname + '#garden=' + encodeGardenSummary(rows)
+    : '';
+  const shareData = {
+    title:'나의 마음 온실 정원',
+    text:'제 마음 온실 정원을 구경해보세요 🌱',
+    url:shareUrl
+  };
+
+  // 이미지 생성 같은 비동기 작업보다 먼저 호출해야 휴대폰이
+  // 현재의 버튼 누르기를 사용자 동작으로 인정하고 공유창을 연다.
+  if(shareUrl && typeof navigator.share === 'function'){
+    try{
+      await navigator.share(shareData);
+      return;
+    }catch(e){
+      if(e && e.name === 'AbortError') return;
+    }
+  }
+
+  showDownloadShareModal({
+    title:'정원 링크 보내기',
+    shareUrl,
+    shareText:shareData.text
+  });
+}
 async function shareGardenAsImage(){
   const rows = buildGardenSummary();
   if(rows.length===0){ alert('아직 채워진 정원이 없어요. 카드를 몇 개 뽑아본 뒤 공유해보세요.'); return; }
@@ -7306,10 +7338,7 @@ async function shareGardenAsImage(){
   }, 'image/png');
 }
 $('#btn-share-garden').addEventListener('click', ()=>{
-  if(sharePending) return;
-  sharePending = true;
-  showBusyToast('정원 이미지를 만들고 있어요…');
-  shareGardenAsImage();
+  shareGardenDirect();
 });
 
 // 공유받은 정원 링크로 들어온 경우, 읽기 전용 요약 화면을 보여줌
