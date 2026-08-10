@@ -6110,9 +6110,8 @@ function updateHomeGreeting(){
 }
 
 (function initEntry(){
-  const p = loadProfile();
-  if(!p){ openOnboard(false); }
-  else { updateHomeGreeting(); showScreen('screen-home'); }
+  updateHomeGreeting();
+  showScreen('screen-home');
 })();
 
 /* ---------- 홈 ---------- */
