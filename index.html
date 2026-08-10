@@ -7372,24 +7372,61 @@ function checkSharedGardenLink(){
   if(!rows || rows.length===0) return false;
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:linear-gradient(160deg,#f3eefb,#fbeff2);z-index:9999;overflow-y:auto;padding:24px 18px;';
-  const rowsHtml = rows.map(r=>{
+  const sharedThemes = [
+    ['#f4eafa','#8f6bb4','#fbf7fd'], ['#e4f1ec','#4f8871','#f7fbf9'],
+    ['#f8eadf','#b87852','#fff9f4'], ['#e6eef8','#557ca8','#f8fbff'],
+    ['#f6e7eb','#a9687c','#fff8fa'], ['#eee9dc','#8b7955','#fcfaf4']
+  ];
+  const sharedSigil = (label)=>{
+    if(label.includes('타로')) return '☾';
+    if(label.includes('글귀')) return '❝';
+    if(label.includes('미술')) return '◇';
+    if(label.includes('영화')) return '▷';
+    if(label.includes('연극')) return '▣';
+    if(label.includes('동물')) return '♧';
+    if(label.includes('식물')) return '♢';
+    if(label.includes('책')) return '▤';
+    if(label.includes('음악')) return '♪';
+    if(label.includes('색깔')) return '◉';
+    if(label.includes('모양')) return '△';
+    if(label.includes('혼잣말')) return '···';
+    if(label.includes('행성')) return '✦';
+    return '◌';
+  };
+  const rowsHtml = rows.map((r,index)=>{
     const stage = growthStage(r.pct);
-    return `<div style="display:flex;align-items:center;gap:10px;background:#fffaf5;border-radius:14px;padding:10px 14px;margin-bottom:8px;box-shadow:0 4px 10px rgba(122,95,174,0.08);">
-      <span style="font-size:22px;">${stage.emoji}</span>
-      <div style="flex:1;">
-        <div style="font-weight:800;font-size:13.5px;color:#4a4258;">${escapeHtml(r.label)}</div>
-        <div style="background:#e7def4;border-radius:100px;height:8px;overflow:hidden;margin-top:4px;">
-          <div style="background:${r.pct>=100?'#f0c860':'#9b7fc7'};width:${r.pct}%;height:100%;"></div>
-        </div>
+    const theme = sharedThemes[index % sharedThemes.length];
+    return `<article class="shared-garden-card" style="--sg-bg:${theme[0]};--sg-accent:${theme[1]};--sg-paper:${theme[2]};">
+      <span class="shared-garden-corner" aria-hidden="true"></span>
+      <div class="shared-garden-kicker">마음 온실 카드</div>
+      <div class="shared-garden-sigil" aria-hidden="true">${sharedSigil(r.label)}</div>
+      <div class="shared-garden-card-copy">
+        <div class="shared-garden-card-name">${escapeHtml(r.label)}</div>
+        <div class="shared-garden-stage">${escapeHtml(stage.label)} · ${r.pct}%</div>
+        <div class="shared-garden-progress" aria-label="정원 성장 ${r.pct}%"><i style="width:${r.pct}%;"></i></div>
       </div>
-    </div>`;
+    </article>`;
   }).join('');
   overlay.innerHTML = `
+    <style>
+      .shared-garden-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;text-align:left;}
+      .shared-garden-card{position:relative;aspect-ratio:3/4.15;min-height:216px;overflow:hidden;border:1px solid color-mix(in srgb,var(--sg-accent) 24%,white);border-radius:22px;padding:16px;background:linear-gradient(155deg,var(--sg-paper),var(--sg-bg));box-shadow:0 9px 24px color-mix(in srgb,var(--sg-accent) 16%,transparent);display:flex;flex-direction:column;isolation:isolate;}
+      .shared-garden-card::before{content:'';position:absolute;inset:9px;border:1px solid color-mix(in srgb,var(--sg-accent) 28%,white);border-radius:15px;pointer-events:none;}
+      .shared-garden-corner{position:absolute;width:92px;height:92px;border-radius:50%;right:-38px;top:-42px;background:color-mix(in srgb,var(--sg-accent) 13%,transparent);z-index:-1;}
+      .shared-garden-kicker{font-size:9px;letter-spacing:.12em;color:var(--sg-accent);font-weight:800;text-transform:uppercase;}
+      .shared-garden-sigil{flex:1;display:grid;place-items:center;font-size:52px;line-height:1;color:var(--sg-accent);text-shadow:0 2px 0 rgba(255,255,255,.8);}
+      .shared-garden-card-copy{position:relative;z-index:1;}
+      .shared-garden-card-name{font-size:14px;line-height:1.28;font-weight:900;color:#4a4258;word-break:keep-all;}
+      .shared-garden-stage{margin-top:5px;font-size:10.5px;font-weight:700;color:var(--sg-accent);}
+      .shared-garden-progress{height:6px;margin-top:9px;border-radius:99px;overflow:hidden;background:rgba(255,255,255,.76);}
+      .shared-garden-progress i{display:block;height:100%;border-radius:inherit;background:var(--sg-accent);}
+      @media(max-width:360px){.shared-garden-grid{gap:10px}.shared-garden-card{min-height:196px;padding:14px}.shared-garden-sigil{font-size:44px}}
+    </style>
     <div style="max-width:420px;margin:0 auto;text-align:center;">
       <div class="mark">🪴</div>
       <h1 style="font-family:'Gaegu','Malgun Gothic','Apple SD Gothic Neo',sans-serif;color:#7a5fae;">누군가의 마음 온실 정원</h1>
       <p style="color:#9b7fc7;font-size:13px;margin-bottom:18px;">친구가 가꾼 정원이에요. 정원은 경쟁이 아니라 각자의 기록이에요.</p>
-      <div style="text-align:left;">${rowsHtml}</div>
+      <div class="shared-garden-grid">${rowsHtml}</div>
       <button id="btn-start-my-garden" style="margin-top:20px;width:100%;padding:14px;border:none;border-radius:14px;background:#9b7fc7;color:#fff;font-weight:800;font-size:15px;cursor:pointer;">🌱 나도 마음 온실 시작하기</button>
     </div>`;
   document.body.appendChild(overlay);
