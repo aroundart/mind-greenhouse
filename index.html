@@ -7102,26 +7102,29 @@ async function shareImageSmart(blob, filename, shareData, shareUrl){
   hideBusyToast();
   sharePending = false;
   if(!blob){
-    showShareChoiceModal({blob:null, filename, shareUrl:shareUrl||'', shareText:''});
+    showShareChoiceModal({blob:null, filename, shareUrl:shareUrl||'', shareText:'', shareData});
     return;
   }
   if(document.querySelector('.card-modal .cm-box #sh-copy')) return;   // 이미 공유창이 열려 있으면 중복 방지
-  if(await shareImageFile(blob, filename, shareData)) return;          // ① 기본 공유창 성공(휴대폰이면 카톡이 바로 뜸)
-  showShareChoiceModal({blob, filename, shareUrl:shareUrl||'', shareText:(shareData&&shareData.text)||''});
+  // 브라우저가 실제 공유창을 띄우지 않고 성공으로 응답하는 경우가 있어
+  // 항상 방법 선택창을 먼저 보여주고 사용자가 원하는 공유 경로를 고르게 한다.
+  showShareChoiceModal({blob, filename, shareUrl:shareUrl||'', shareText:(shareData&&shareData.text)||'', shareData});
 }
 
 /* 기본 공유창을 못 쓸 때 — 무엇을 할지 고르게 한다 */
-function showShareChoiceModal({blob, filename, shareUrl, shareText}){
+function showShareChoiceModal({blob, filename, shareUrl, shareText, shareData}){
   const overlay = document.createElement('div');
   overlay.className = 'card-modal';
   const hosted = isWebHosted();
+  const nativeAvailable = typeof navigator.share === 'function' && typeof navigator.canShare === 'function';
   overlay.innerHTML = `
     <div class="cm-box" style="text-align:left;">
       <p class="cm-name" style="text-align:center;">이렇게 보낼 수 있어요</p>
       <p class="mini-note" style="margin-bottom:14px;">${hosted
-        ? '이 기기에서는 바로 보내기 창이 열리지 않아요. 아래에서 골라주세요.'
+        ? '원하는 방법을 골라 바로 보내거나 저장할 수 있어요.'
         : '지금은 파일을 더블클릭해서 열어보고 계세요. 이렇게 열면 브라우저가 <b>복사와 바로 보내기를 막습니다</b>(앱 문제가 아니에요). 지금은 «이미지 저장하기»로 저장한 뒤 카카오톡에 첨부해 주세요. 인터넷 주소로 올리면 버튼 한 번으로 카카오톡이 열려요.'}</p>
       <div class="stack">
+        ${nativeAvailable ? '<button class="btn" id="sh-native">📤 카카오톡 등으로 바로 보내기</button>' : ''}
         ${hosted
           ? '<button class="btn" id="sh-copy">📋 이미지 복사하기</button><button class="btn ghost" id="sh-save">💾 이미지 저장하기</button>'
           : '<button class="btn" id="sh-save">💾 이미지 저장하기</button><button class="btn ghost" id="sh-copy">📋 이미지 복사하기</button>'}
@@ -7131,6 +7134,14 @@ function showShareChoiceModal({blob, filename, shareUrl, shareText}){
       <button class="btn ghost" id="sh-close" style="margin-top:6px;width:100%;">닫기</button>
     </div>`;
   const st = overlay.querySelector('#sh-status');
+  const nativeBtn = overlay.querySelector('#sh-native');
+  if(nativeBtn) nativeBtn.addEventListener('click', async ()=>{
+    if(!blob){ st.textContent = '이미지를 만들지 못했어요. 잠시 뒤 다시 눌러주세요.'; return; }
+    st.textContent = '기기 공유창을 여는 중이에요…';
+    const ok = await shareImageFile(blob, filename, shareData || {text:shareText||'', url:shareUrl||''});
+    if(ok){ overlay.remove(); }
+    else{ st.textContent = '공유창을 열지 못했어요. 아래의 이미지 저장 또는 링크 복사를 이용해 주세요.'; }
+  });
   overlay.querySelector('#sh-copy').addEventListener('click', async ()=>{
     if(!blob){ st.textContent = '이미지를 만들지 못했어요. 잠시 뒤 다시 눌러주세요.'; return; }
     st.textContent = '복사하는 중…';
