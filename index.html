@@ -7054,7 +7054,9 @@ async function shareImageFile(blob, filename, shareData){
     await navigator.share({...shareData, files:[file]});
     return true;
   }catch(e){
-    return e && e.name === 'AbortError';
+    // 공유창이 열리지 않거나 닫힌 경우에도 성공으로 끝내지 않고
+    // 이미지 저장·복사·링크 복사를 선택할 수 있는 대체 창을 보여준다.
+    return false;
   }
 }
 /* ================= 공유하기 (2026-08-07 전면 개편) =================
