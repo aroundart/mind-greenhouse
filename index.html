@@ -206,10 +206,10 @@
   .reveal-art svg{width:100%;height:100%;}
   /* 실제 그림(사진)이 들어간 경우 — 원형 배지 대신 카드 모양으로 크게 (2026-08-11) */
   .reveal-art:has(img){
-    width:210px;height:210px;border-radius:16px;background:none;border:none;padding:0;
-    box-shadow:0 10px 24px rgba(122,95,174,0.28);
+    width:190px;height:250px;border-radius:16px;background:var(--card);border:none;padding:0;
+    box-shadow:0 10px 24px rgba(122,95,174,0.28);overflow:hidden;
   }
-  @media (max-height:720px){ .reveal-art:has(img){width:170px;height:170px;} }
+  @media (max-height:720px){ .reveal-art:has(img){width:152px;height:200px;} }
   .reveal-art img{display:block;}
   .book-cover{
     width:92px;height:120px;margin:0 auto 8px;border-radius:4px 8px 8px 4px;
@@ -1932,7 +1932,10 @@ function cardImageTag(chapterKey, itemName){
   if(!pool || !pool.length) return null;
   const file = pool[Math.floor(Math.random()*pool.length)];
   const src = CARD_IMAGE_DIR + chapterKey2Dir(chapterKey) + '/' + encodeURIComponent(file);
-  return `<img src="${src}" alt="${escapeHtml(itemName)}" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:top center;border-radius:12px;">`;
+  // 카드 리빌 화면(오라클·타로·행성·식물·모양·탄생화)은 원본 그림 형태 그대로(contain), 온보딩 그리드 아이콘(사람·음식)은 꽉 채운 사진(cover)
+  const isOnboardIcon = (chapterKey === 'people' || chapterKey === 'food');
+  const fit = isOnboardIcon ? 'cover' : 'contain';
+  return `<img src="${src}" alt="${escapeHtml(itemName)}" loading="lazy" style="width:100%;height:100%;object-fit:${fit};border-radius:12px;">`;
 }
 function chapterKey2Dir(key){
   const dirs = {oracle:'오라클타로', plantart:'식물이야기', planetcard:'행성카드', majortarot:'정통타로', shape:'모양이야기', people:'인간관계이야기', food:'음식', birthflower:'탄생화'};
