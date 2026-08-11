@@ -7632,6 +7632,7 @@ function drawTextCard(id){
       name = s.month+'월의 탄생석 · '+s.name; content = pickedSMean.length>40 ? pickedSMean : ('의미: '+pickedSMean);
       extra = '현대 탄생석 목록은 1912년 미국 보석상협회가 정리한 것이 널리 퍼진 것으로, 그 이전엔 나라와 시대마다 조금씩 다른 목록이 쓰였어요.';
       art = `<svg viewBox="0 0 100 100"><polygon points="50,10 80,35 68,90 32,90 20,35" fill="${s.color}" stroke="#fff" stroke-width="2"/><polygon points="50,10 65,38 50,50 35,38" fill="#ffffff" opacity="0.25"/></svg>`;
+      art = cardImageTag('birthstone', s.name) || art;
     } else {
       // 생일이 없어도 막지 않는다 — 이번 달의 돌로 보여준다
       const today = new Date();
@@ -7642,6 +7643,7 @@ function drawTextCard(id){
       content = pickedSMean.length>40 ? pickedSMean : ('의미: '+pickedSMean);
       extra = `지금은 ${s.month}월, 이 달에 어울리는 돌이에요.\n현대 탄생석 목록은 1912년 미국 보석상협회가 정리한 것이 널리 퍼진 것으로, 그 이전엔 나라와 시대마다 조금씩 다른 목록이 쓰였어요.`;
       art = `<svg viewBox="0 0 100 100"><polygon points="50,10 80,35 68,90 32,90 20,35" fill="${s.color}" stroke="#fff" stroke-width="2"/><polygon points="50,10 65,38 50,50 35,38" fill="#ffffff" opacity="0.25"/></svg>`;
+      art = cardImageTag('birthstone', s.name) || art;
     }
   } else if(id==='quote'){
     // 외부 저작물 인용은 이용 허락과 번역 권리 확인 전까지 노출하지 않아요.
