@@ -602,6 +602,24 @@
     h1{font-size:32px;}
     .flip-card{height:424px;}
   }
+
+  /* 🔴 2026-08-16: 휴대폰에서 «눌렀는데 선택이 안 된다»는 제보로 고침.
+     아이폰·안드로이드는 누른 자리에 글자가 있으면 «글자 선택»으로 알아듣고
+     카드 고르기를 씹어버린다. 길게 누르면 복사 메뉴까지 떠서 더 안 눌린다.
+     원래 '가고 싶은 곳'(.place-card)에만 이 대비가 돼 있었고 나머지 카드엔 빠져 있었다.
+     아래 네 줄이 «이건 글자가 아니라 누르는 것»이라고 알려주는 표시다. */
+  button,
+  .mood-card, .card-tile, .person-card, .food-card, .shape-tile, .animal-tile,
+  .an-chip, .mini-card, .star-btn, .flip-card, .swatch-mini,
+  .art-mode-btn, .art-tool-btn, .art-variant-btn{
+    -webkit-user-select:none; user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;
+    touch-action:manipulation;
+  }
+  /* 카드 안의 글자·그림이 손가락을 가로채지 않고 카드 자신이 받도록 (.place-card 와 같은 방식) */
+  .mood-card *, .card-tile *, .person-card *, .food-card *,
+  .shape-tile *, .animal-tile *, .an-chip *{ pointer-events:none; }
 </style>
 <!-- 최종 수정: 2026-08-16 11:16 (KST) · 어라운드아트(AROUNDART) · 언어재활사 오아쌤
      2026-08-16 11:16 수정: 분위기 그림(무드 카드) 신설 — 글귀·영화·연극·책·음악·마음지식·혼잣말 7개 챕터에
